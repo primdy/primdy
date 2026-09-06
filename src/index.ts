@@ -7,4 +7,4 @@ export type {
   YlodeConfig,
 } from "./runtime/types";
 export { json, text, redirect } from "./runtime/response";
-export { cookies } from "./runtime/cookies";
+export { cookies, setCookie, deleteCookie } from "./runtime/cookies";
