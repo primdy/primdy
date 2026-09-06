@@ -1,0 +1,27 @@
+{
+  "name": "ylode",
+  "version": "0.1.0",
+  "description": "Blazingly fast API framework",
+  "type": "module",
+  "bin": {
+    "ylode": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build src/cli/index.ts --outdir dist/cli --target bun --format esm",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "chalk": "^6.0.0",
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.1",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "bun": ">=1.4.0"
+  }
+}

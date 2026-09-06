@@ -1,0 +1,8 @@
+{
+  "type": "module",
+  "scripts": {
+    "dev": "ylode dev",
+    "build": "ylode build",
+    "start": "ylode start"
+  }
+}
