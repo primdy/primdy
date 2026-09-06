@@ -11,18 +11,24 @@ type CookieOptions = {
 function parse(value: string | null) {
   const out = new Map<string, string>();
   if (!value) return out;
-  for (const part of value.split(";")) {
-    const i = part.indexOf("=");
+  for (const p of value.split(";")) {
+    const i = p.indexOf("=");
     if (i === -1) continue;
-    out.set(
-      part.slice(0, i).trim(),
-      decodeURIComponent(part.slice(i + 1).trim()),
-    );
+    const raw = p.slice(i + 1).trim();
+    try {
+      out.set(p.slice(0, i).trim(), decodeURIComponent(raw));
+    } catch {
+      out.set(p.slice(0, i).trim(), raw);
+    }
   }
   return out;
 }
 
+const biscuit = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/; //https://datatracker.ietf.org/doc/html/rfc6265
 function serialize(name: string, value: string, options: CookieOptions = {}) {
+  if (!biscuit.test(name)) {
+    throw new Error(`Invalid cookie ${JSON.stringify(name)}`);
+  }
   let result = `${name}=${encodeURIComponent(value)}`;
   if (options.maxAge !== undefined) result += `; Max-Age=${options.maxAge}`;
   if (options.expires) result += `; Expires=${options.expires.toUTCString()}`;

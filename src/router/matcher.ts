@@ -16,11 +16,12 @@ export function matchRoute(routes: Route[], pathname: string): Match | null {
         continue;
       }
       if (segment.type === "dynamic") {
-        if (parts[index] === undefined) {
+        const decoded = decode(parts[index]);
+        if (decoded === null) {
           matched = false;
           break;
         }
-        params[segment.name] = decodeURIComponent(parts[index]);
+        params[segment.name] = decoded;
         index++;
         continue;
       }
@@ -29,11 +30,21 @@ export function matchRoute(routes: Route[], pathname: string): Match | null {
           matched = false;
           break;
         }
-        params[segment.name] = parts.slice(index).map(decodeURIComponent);
+        const decoded = decodeAll(parts.slice(index));
+        if (decoded === null) {
+          matched = false;
+          break;
+        }
+        params[segment.name] = decoded;
         index = parts.length;
         continue;
       }
-      params[segment.name] = parts.slice(index).map(decodeURIComponent);
+      const decoded = decodeAll(parts.slice(index));
+      if (decoded === null) {
+        matched = false;
+        break;
+      }
+      params[segment.name] = decoded;
       index = parts.length;
     }
     if (matched && index === parts.length) return { route, params };
@@ -41,8 +52,27 @@ export function matchRoute(routes: Route[], pathname: string): Match | null {
   return null;
 }
 
+function decode(p: string) {
+  try {
+    return decodeURIComponent(p);
+  } catch {
+    return null;
+  }
+}
+
+function decodeAll(pa: string[]) {
+  const decoded: string[] = [];
+  for (const p of pa) {
+    const value = decode(p);
+    if (value === null) return null;
+    decoded.push(value);
+  }
+  return decoded;
+}
+
 export function matchMiddleware(middleware: Middleware[], route: Route) {
   return middleware.filter(
-    (m) => m.dir === "" || route.dir === m.dir || route.dir.startsWith(`${m.dir}/`),
+    (m) =>
+      m.dir === "" || route.dir === m.dir || route.dir.startsWith(`${m.dir}/`),
   );
 }
