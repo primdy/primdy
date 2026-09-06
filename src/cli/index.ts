@@ -9,7 +9,7 @@ import { build } from "../compiler/compile";
 import { loadConfig } from "../config/loader";
 import { log, ready } from "../logger";
 import { readManifest } from "../compiler/manifest";
-import { scanRoutes } from "../router/scanner";
+import { scanMiddleware, scanRoutes } from "../router/scanner";
 import { startServer } from "../runtime/server";
 
 const program = new Command();
@@ -72,10 +72,15 @@ program
     const port = Number(options.port ?? project.port);
     const hostname = options.hostname ?? project.hostname;
     const routes = await scanRoutes(project.appPath);
-    startServer(routes, {
-      port,
-      hostname,
-    });
+    const middleware = await scanMiddleware(project.appPath);
+    startServer(
+      routes,
+      {
+        port,
+        hostname,
+      },
+      middleware,
+    );
     ready(t1);
   });
 
@@ -89,7 +94,7 @@ program
       process.exit(1);
     }
     try {
-      const routes = await build(project.cwd, project.appDir);
+      const { routes } = await build(project.cwd, project.appDir);
       log.success(`Built ${routes.length} routes`);
     } catch (error) {
       log.err(error instanceof Error ? error.message : String(error));
@@ -110,10 +115,14 @@ program
     const hostname = options.hostname ?? project.hostname;
     try {
       const manifest = await readManifest(project.cwd);
-      startServer(manifest.routes, {
-        port,
-        hostname,
-      });
+      startServer(
+        manifest.routes,
+        {
+          port,
+          hostname,
+        },
+        manifest.middleware,
+      );
       ready(t1);
     } catch {
       log.err(

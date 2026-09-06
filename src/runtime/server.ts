@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import type { Route } from "../router/types";
+import type { Middleware, Route } from "../router/types";
 import { handleRequest } from "./handler";
 import { reqlog } from "./logger";
 
@@ -9,6 +9,7 @@ export function startServer(
     port: number;
     hostname: string;
   },
+  middleware: Middleware[] = [],
 ) {
   const server = Bun.serve({
     hostname: options.hostname,
@@ -17,7 +18,7 @@ export function startServer(
       const started = performance.now();
       const url = new URL(request.url);
       try {
-        const response = await handleRequest(request, routes);
+        const response = await handleRequest(request, routes, middleware);
         reqlog(request, url.pathname, response.status, started);
         return response;
       } catch (error) {

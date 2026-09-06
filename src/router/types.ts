@@ -7,9 +7,15 @@ export type Segment =
 export type Route = {
   id: string;
   file: string;
+  dir: string;
   pathname: string;
   segments: Segment[];
   methods: string[];
+};
+
+export type Middleware = {
+  file: string;
+  dir: string;
 };
 
 export type Match = {

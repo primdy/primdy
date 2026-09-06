@@ -1,13 +1,18 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
-import type { Route } from "../router/types";
+import type { Middleware, Route } from "../router/types";
 
 export type BuildManifest = {
   version: 1;
   routes: Route[];
+  middleware: Middleware[];
 };
 
-export async function writeManifest(cwd: string, routes: Route[]) {
+export async function writeManifest(
+  cwd: string,
+  routes: Route[],
+  middleware: Middleware[] = [],
+) {
   const dir = join(cwd, ".ylode");
   await mkdir(dir, { recursive: true });
 
@@ -16,6 +21,10 @@ export async function writeManifest(cwd: string, routes: Route[]) {
     routes: routes.map((route) => ({
       ...route,
       file: relative(dir, route.file).replaceAll("\\", "/"),
+    })),
+    middleware: middleware.map((entry) => ({
+      ...entry,
+      file: relative(dir, entry.file).replaceAll("\\", "/"),
     })),
   };
   await writeFile(join(dir, "routes.json"), JSON.stringify(manifest, null, 2));
@@ -31,6 +40,10 @@ export async function readManifest(cwd: string): Promise<BuildManifest> {
     routes: manifest.routes.map((route) => ({
       ...route,
       file: join(dir, route.file),
+    })),
+    middleware: (manifest.middleware ?? []).map((entry) => ({
+      ...entry,
+      file: join(dir, entry.file),
     })),
   };
 }

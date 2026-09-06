@@ -4,6 +4,7 @@ export function parseRoute(relative: string) {
   const parts = relative.replaceAll("\\", "/").split("/");
   if (parts.at(-1) !== "route.ts" && parts.at(-1) !== "route.js") return null;
   parts.pop();
+  const dir = parts.join("/");
 
   const segments: Segment[] = [];
   for (const part of parts) {
@@ -24,6 +25,7 @@ export function parseRoute(relative: string) {
   }
 
   return {
+    dir,
     segments,
     pathname: segments.length
       ? "/" +

@@ -22,6 +22,17 @@ export type RouteHandler<
 
 export type RouteModule = Partial<Record<HTTPMethod, RouteHandler>>;
 
+export type MiddlewareHandler = (
+  request: Request,
+  context: RouteContext,
+) => Response | void | Promise<Response | void>;
+
+export type MiddlewareModule = {
+  default?: MiddlewareHandler;
+  middleware?: MiddlewareHandler;
+  proxy?: MiddlewareHandler;
+};
+
 export type YlodeConfig = {
   appDir?: string;
   port?: number;

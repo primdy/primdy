@@ -1,4 +1,4 @@
-import type { Match, Route } from "./types";
+import type { Match, Middleware, Route } from "./types";
 
 export function matchRoute(routes: Route[], pathname: string): Match | null {
   const parts = pathname.split("/").filter(Boolean);
@@ -39,4 +39,10 @@ export function matchRoute(routes: Route[], pathname: string): Match | null {
     if (matched && index === parts.length) return { route, params };
   }
   return null;
+}
+
+export function matchMiddleware(middleware: Middleware[], route: Route) {
+  return middleware.filter(
+    (m) => m.dir === "" || route.dir === m.dir || route.dir.startsWith(`${m.dir}/`),
+  );
 }

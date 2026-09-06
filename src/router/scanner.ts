@@ -1,6 +1,6 @@
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { parseRoute } from "./parser";
-import type { Route } from "./types";
+import type { Middleware, Route } from "./types";
 
 const methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
 
@@ -14,12 +14,25 @@ export async function scanRoutes(appDir: string): Promise<Route[]> {
     routes.push({
       id: rel.replaceAll("/", ":").replace(/\.(ts|js)$/, ""),
       file: entry,
+      dir: parsed.dir,
       pathname: parsed.pathname,
       segments: parsed.segments,
       methods,
     });
   }
   return routes.sort(compareRoutes);
+}
+
+export async function scanMiddleware(appDir: string): Promise<Middleware[]> {
+  const middleware: Middleware[] = [];
+  for await (const entry of new Bun.Glob("**/{middleware,proxy}.{ts,js}").scan({
+    cwd: appDir,
+    absolute: true,
+  })) {
+    const dir = relative(appDir, dirname(entry)).replaceAll("\\", "/");
+    middleware.push({ file: entry, dir: dir === "." ? "" : dir });
+  }
+  return middleware.sort((a, b) => a.dir.length - b.dir.length);
 }
 
 async function* walk(dir: string): AsyncGenerator<string> {
