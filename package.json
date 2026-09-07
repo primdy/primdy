@@ -4,13 +4,13 @@
   "description": "Blazingly fast API framework",
   "type": "module",
   "bin": {
-    "ylode": "./dist/cli/index.js"
+    "ylode": "./dist/server/index.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "bun build src/cli/index.ts --outdir dist/cli --target bun --format esm",
+    "build": "bun scripts/build.ts",
     "test": "bun test"
   },
   "dependencies": {
