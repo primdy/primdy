@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "Blazingly fast API framework",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "bin": {
     "ylode": "./dist/server/index.js"
   },
