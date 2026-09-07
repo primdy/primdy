@@ -1,4 +1,4 @@
-import type { YlodeConfig } from "ylode" //fix
+import type { YlodeConfig } from "ylode"
 
 export default {
   port: 3000
