@@ -20,6 +20,7 @@
   ],
   "scripts": {
     "build": "bun scripts/build.ts",
+    "prepublishOnly": "bun run build",
     "test": "bun test"
   },
   "dependencies": {
