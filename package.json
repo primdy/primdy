@@ -2,6 +2,7 @@
   "name": "ylode",
   "version": "0.1.0",
   "description": "Blazingly fast API framework",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
