@@ -27,7 +27,7 @@ export async function writeManifest(
       file: relative(dir, entry.file).replaceAll("\\", "/"),
     })),
   };
-  await writeFile(join(dir, "routes.json"), JSON.stringify(manifest, null, 2));
+  await writeFile(join(dir, "routes.json"), JSON.stringify(manifest));
 }
 
 export async function readManifest(cwd: string): Promise<BuildManifest> {

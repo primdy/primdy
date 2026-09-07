@@ -1,4 +1,4 @@
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { scanMiddleware, scanRoutes } from "../router/scanner";
 import { writeManifest } from "./manifest";
@@ -47,5 +47,15 @@ async function bundle(entrypoint: string, outdir: string) {
   if (!result.success) {
     throw new Error(`Failed to build ${entrypoint}`);
   }
-  return join(outdir, basename(entrypoint).replace(/\.(ts|js)$/, ".js"));
+  const outfile = join(
+    outdir,
+    basename(entrypoint).replace(/\.(ts|js)$/, ".js"),
+  );
+  await minifymap(`${outfile}.map`);
+  return outfile;
+}
+
+async function minifymap(map: string) {
+  const contents = await readFile(map, "utf8");
+  await writeFile(map, JSON.stringify(JSON.parse(contents)));
 }
