@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
+import { build as esbuild } from "esbuild";
 import { scanMiddleware, scanRoutes } from "../router/scanner";
 import { writeManifest } from "./manifest";
 import { writeTypes } from "./typegen";
@@ -36,15 +37,17 @@ export async function build(cwd: string, appDir: string) {
 }
 
 async function bundle(entrypoint: string, outdir: string) {
-  const result = await Bun.build({
-    entrypoints: [entrypoint],
+  const result = await esbuild({
+    entryPoints: [entrypoint],
     outdir,
-    target: "bun",
+    bundle: true,
+    platform: "node",
     format: "esm",
-    minify: { whitespace: true },
+    minifyWhitespace: true,
     sourcemap: "external",
+    logLevel: "silent",
   });
-  if (!result.success) {
+  if (result.errors.length) {
     throw new Error(`Failed to build ${entrypoint}`);
   }
   const outfile = join(

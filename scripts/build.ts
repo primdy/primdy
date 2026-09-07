@@ -18,6 +18,7 @@ async function clean() {
 const opts = {
   target: "bun" as const, //"node" breaking icons rn
   packages: "bundle" as const,
+  external: ["esbuild"],
   sourcemap: "none" as const,
   //minify: { whitespace: true, syntax: true, identifiers: true },
   minify: true,
