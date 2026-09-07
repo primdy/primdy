@@ -11,6 +11,7 @@ import { log, ready } from "../logger";
 import { readManifest } from "../compiler/manifest";
 import { scanMiddleware, scanRoutes } from "../router/scanner";
 import { startServer } from "../runtime/server";
+import { makeTrees } from "../utils";
 
 import type { YlodeConfig } from "../runtime/types";
 
@@ -137,13 +138,32 @@ program
   .argument("[directory]", "Application directory", ".")
   .description("Creates a production build of your application.")
   .action(async (directory) => {
+    const t1 = performance.now();
     const project = await getProject(directory);
     if (!(await requireProject(project.appPath))) {
       process.exit(1);
     }
     try {
-      const { routes } = await build(project.cwd, project.src);
-      log.success(`Built ${routes.length} routes`);
+      const { routes, middleware } = await build(project.cwd, project.src);
+      await makeTrees([
+        {
+          title: "Routes",
+          entries: routes.map((route) => ({
+            label: route.pathname,
+            file: route.file,
+          })),
+        },
+        {
+          title: "Middleware",
+          entries: middleware.map((entry) => ({
+            label: entry.dir ? `/${entry.dir}` : "/",
+            file: entry.file,
+          })),
+        },
+      ]);
+      log.success(
+        `Built ${routes.length} routes in ${Math.round(performance.now() - t1)}ms`,
+      );
     } catch (error) {
       log.err(error instanceof Error ? error.message : String(error));
       process.exit(1);

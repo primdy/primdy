@@ -33,7 +33,7 @@ export async function build(cwd: string, src: string) {
 
   await writeManifest(cwd, builtRoutes, builtMiddleware);
   await writeTypes(cwd, routes);
-  return { routes, middleware };
+  return { routes: builtRoutes, middleware: builtMiddleware };
 }
 
 async function bundle(entrypoint: string, outdir: string) {
