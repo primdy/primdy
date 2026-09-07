@@ -17,13 +17,13 @@ function fullpath(r: Dirent): string {
   );
 }
 
-export async function scanRoutes(appDir: string): Promise<Route[]> {
+export async function scanRoutes(src: string): Promise<Route[]> {
   const routes: Route[] = [];
-  for (const r of await listFiles(appDir)) {
+  for (const r of await listFiles(src)) {
     if (!r.isFile()) continue;
     if (r.name !== "route.ts" && r.name !== "route.js") continue;
     const file = fullpath(r);
-    const rel = relative(appDir, file);
+    const rel = relative(src, file);
     const parsed = parseRoute(rel);
     if (!parsed) continue;
     routes.push({
@@ -38,13 +38,13 @@ export async function scanRoutes(appDir: string): Promise<Route[]> {
   return routes.sort(compareRoutes);
 }
 
-export async function scanMiddleware(appDir: string): Promise<Middleware[]> {
+export async function scanMiddleware(src: string): Promise<Middleware[]> {
   const middleware: Middleware[] = [];
-  for (const entry of await listFiles(appDir)) {
+  for (const entry of await listFiles(src)) {
     if (!entry.isFile()) continue;
     if (!/^(middleware|proxy)\.(ts|js)$/.test(entry.name)) continue;
     const file = fullpath(entry);
-    const dir = relative(appDir, dirname(file)).replaceAll("\\", "/");
+    const dir = relative(src, dirname(file)).replaceAll("\\", "/");
     middleware.push({ file, dir: dir === "." ? "" : dir });
   }
   return middleware.sort((a, b) => a.dir.length - b.dir.length);

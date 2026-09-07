@@ -34,7 +34,7 @@ export type MiddlewareModule = {
 };
 
 export type YlodeConfig = {
-  appDir?: string;
+  src?: string;
   port?: number;
   hostname?: string;
   node?: boolean;

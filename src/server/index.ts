@@ -58,14 +58,14 @@ async function getProject(
     hostname: process.env.HOSTNAME,
     ...overrides,
   });
-  const appDir = config.appDir ?? "app";
-  const appPath = join(cwd, appDir);
+  const src = config.src ?? "src";
+  const appPath = join(cwd, src);
   const port = config.port ?? 3000;
   const hostname = config.hostname ?? "localhost";
   return {
     cwd,
     config,
-    appDir,
+    src,
     appPath,
     port,
     hostname,
@@ -142,7 +142,7 @@ program
       process.exit(1);
     }
     try {
-      const { routes } = await build(project.cwd, project.appDir);
+      const { routes } = await build(project.cwd, project.src);
       log.success(`Built ${routes.length} routes`);
     } catch (error) {
       log.err(error instanceof Error ? error.message : String(error));

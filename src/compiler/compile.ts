@@ -6,9 +6,9 @@ import { writeManifest } from "./manifest";
 import { writeTypes } from "./typegen";
 import type { Middleware, Route } from "../router/types";
 
-export async function build(cwd: string, appDir: string) {
-  const routes = await scanRoutes(join(cwd, appDir));
-  const middleware = await scanMiddleware(join(cwd, appDir));
+export async function build(cwd: string, src: string) {
+  const routes = await scanRoutes(join(cwd, src));
+  const middleware = await scanMiddleware(join(cwd, src));
   const outputDir = join(cwd, ".ylode");
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
