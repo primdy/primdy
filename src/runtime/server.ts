@@ -34,9 +34,11 @@ export function startServer(
   options: {
     port: number;
     hostname: string;
+    forceNode?: boolean;
   },
   middleware: Middleware[] = [],
 ) {
+  const useBun = isBun && !options.forceNode;
   async function fetch(request: Request) {
     const started = performance.now();
     const url = new URL(request.url);
@@ -51,7 +53,7 @@ export function startServer(
       return response;
     }
   }
-  if (isBun) {
+  if (useBun) {
     const server = Bun.serve({
       hostname: options.hostname,
       port: options.port,
@@ -83,7 +85,9 @@ export function startServer(
     console.log(
       `${chalk.bold.yellowBright(`◆ Ylode Server`)}\n- Local:         http://${options.hostname}:${options.port}/`,
     );
-    log.warn("Ylode is optimized for Bun, and Node.js compatibility is slower\n  Consider migrating your application: https://bun.sh/");
+    log.warn(
+      "Ylode is optimized for Bun, and Node.js compatibility is slower\n  Consider migrating your application: https://bun.sh/",
+    );
   });
   return server;
   /*

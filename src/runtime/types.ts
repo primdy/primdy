@@ -37,4 +37,5 @@ export type YlodeConfig = {
   appDir?: string;
   port?: number;
   hostname?: string;
+  node?: boolean;
 };

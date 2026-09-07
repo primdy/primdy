@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import { access, readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -11,6 +11,28 @@ import { log, ready } from "../logger";
 import { readManifest } from "../compiler/manifest";
 import { scanMiddleware, scanRoutes } from "../router/scanner";
 import { startServer } from "../runtime/server";
+
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const isBun = typeof process !== "undefined" && !!process.versions?.bun;
+if (!isBun) {
+  const forcedNode = await loadConfig(process.cwd())
+    .then((config) => config.node === true)
+    .catch(() => false);
+  if (!forcedNode) {
+    try {
+      const proc = fileURLToPath(import.meta.url);
+      const result = spawnSync("bun", [proc, ...process.argv.slice(2)], {
+        stdio: "inherit",
+        env: process.env,
+      });
+      process.exit(result.status ?? 0);
+    } catch {
+      //
+    }
+  }
+}
 
 const program = new Command();
 program
@@ -79,6 +101,7 @@ program
       {
         port,
         hostname,
+        forceNode: project.config.node,
       },
       middleware,
     );
@@ -121,6 +144,7 @@ program
         {
           port,
           hostname,
+          forceNode: project.config.node,
         },
         manifest.middleware,
       );
