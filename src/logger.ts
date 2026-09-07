@@ -3,6 +3,7 @@ import chalk from "chalk"
 export const log = {
   success: (message: string) => console.log(`${chalk.bold.green("✓")} ${message}`),
   info: (message: string) => console.log(`${chalk.bold.cyan("ℹ")} ${message}`),
+  warn: (message: string) => console.log(`${chalk.bold.yellow("⚠")} ${message}`),
   err: (message: string) => console.log(`${chalk.bold.red("✗")} ${message}`),
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { access } from "node:fs/promises";
+import { access, readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { Command } from "commander";
 import chalk from "chalk";
@@ -43,12 +43,13 @@ async function exists(appPath: string) {
   } catch {
     return false;
   }
-  for await (const _ of new Bun.Glob("**/route.{ts,js}").scan({
-    cwd: appPath,
-  })) {
-    return true;
-  }
-  return false;
+  const routes = await readdir(appPath, {
+    recursive: true,
+    withFileTypes: true,
+  }).catch(() => []);
+  return routes.some(
+    (r) => r.isFile() && (r.name === "route.ts" || r.name === "route.js"),
+  );
 }
 
 async function requireProject(appPath: string) {
