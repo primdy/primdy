@@ -6,7 +6,7 @@ export function reqlog(
   status: number,
   started: number,
 ) {
-  const duration = Math.round(performance.now() - started);
+  const duration = performance.now() - started;
   const method = chalk.dim(request.method);
   const path = chalk.white(pathname);
   const statusText =
@@ -19,7 +19,7 @@ export function reqlog(
           : chalk.green(status);
   const time =
     duration < 1
-      ? chalk.dim("<1ms")
+      ? chalk.dim(`${duration.toFixed(2)}ms`)
       : duration >= 100
         ? chalk.yellow(`${Math.round(duration)}ms`)
         : chalk.dim(`${Math.round(duration)}ms`);
