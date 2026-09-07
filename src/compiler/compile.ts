@@ -41,6 +41,7 @@ async function bundle(entrypoint: string, outdir: string) {
     outdir,
     target: "bun",
     format: "esm",
+    minify: { whitespace: true },
     sourcemap: "external",
   });
   if (!result.success) {
