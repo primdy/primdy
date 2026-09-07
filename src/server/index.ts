@@ -12,6 +12,7 @@ import { readManifest } from "../compiler/manifest";
 import { scanMiddleware, scanRoutes } from "../router/scanner";
 import { startServer } from "../runtime/server";
 import { makeTrees } from "../utils";
+import pkg from "../../package.json";
 
 import type { YlodeConfig } from "../runtime/types";
 
@@ -45,7 +46,7 @@ const program = new Command();
 program
   .name("ylode")
   .description("Blazingly fast API framework")
-  .version("0.1.0")
+  .version(pkg.version)
   .helpOption("-h, --help", "Display help")
   .helpCommand("help", "Displays this message.");
 
