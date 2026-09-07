@@ -12,14 +12,20 @@ import { readManifest } from "../compiler/manifest";
 import { scanMiddleware, scanRoutes } from "../router/scanner";
 import { startServer } from "../runtime/server";
 
+import type { YlodeConfig } from "../runtime/types";
+
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const isBun = typeof process !== "undefined" && !!process.versions?.bun;
 if (!isBun) {
-  const forcedNode = await loadConfig(process.cwd())
-    .then((config) => config.node === true)
-    .catch(() => false);
+  const argForce =
+    process.argv.includes("--node") || process.argv.includes("-N");
+  const forcedNode =
+    argForce ||
+    (await loadConfig(process.cwd())
+      .then((config) => config.node === true)
+      .catch(() => false));
   if (!forcedNode) {
     try {
       const proc = fileURLToPath(import.meta.url);
@@ -42,13 +48,20 @@ program
   .helpOption("-h, --help", "Display help")
   .helpCommand("help", "Displays this message.");
 
-async function getProject(directory: string) {
+async function getProject(
+  directory: string,
+  overrides: Partial<YlodeConfig> = {},
+) {
   const cwd = resolve(process.cwd(), directory);
-  const config = await loadConfig(cwd);
+  const config = await loadConfig(cwd, {
+    port: Number(process.env.PORT) || undefined,
+    hostname: process.env.HOSTNAME,
+    ...overrides,
+  });
   const appDir = config.appDir ?? "app";
   const appPath = join(cwd, appDir);
-  const port = Number(process.env.PORT ?? config.port ?? 3000);
-  const hostname = process.env.HOSTNAME ?? config.hostname ?? "localhost";
+  const port = config.port ?? 3000;
+  const hostname = config.hostname ?? "localhost";
   return {
     cwd,
     config,
@@ -57,6 +70,18 @@ async function getProject(directory: string) {
     port,
     hostname,
   };
+}
+
+function argOverride(opts: {
+  port?: string;
+  hostname?: string;
+  node?: boolean;
+}): Partial<YlodeConfig> {
+  const overrides: Partial<YlodeConfig> = {};
+  if (opts.port !== undefined) overrides.port = Number(opts.port);
+  if (opts.hostname !== undefined) overrides.hostname = opts.hostname;
+  if (opts.node !== undefined) overrides.node = opts.node;
+  return overrides;
 }
 
 async function exists(appPath: string) {
@@ -86,21 +111,20 @@ program
   .description("Starts the development server.")
   .option("-p, --port <port>", "Port to listen on")
   .option("-H, --hostname <hostname>", "Hostname to listen on")
+  .option("-N, --node", "Force the Node.js runtime")
   .action(async (directory, options) => {
     const t1 = performance.now();
-    const project = await getProject(directory);
+    const project = await getProject(directory, argOverride(options));
     if (!(await requireProject(project.appPath))) {
       process.exit(1);
     }
-    const port = Number(options.port ?? project.port);
-    const hostname = options.hostname ?? project.hostname;
     const routes = await scanRoutes(project.appPath);
     const middleware = await scanMiddleware(project.appPath);
     startServer(
       routes,
       {
-        port,
-        hostname,
+        port: project.port,
+        hostname: project.hostname,
         forceNode: project.config.node,
       },
       middleware,
@@ -132,18 +156,17 @@ program
   .description("Starts the production server.")
   .option("-p, --port <port>", "Port to listen on")
   .option("-H, --hostname <hostname>", "Hostname to listen on")
+  .option("-N, --node", "Force the Node.js runtime")
   .action(async (directory, options) => {
     const t1 = performance.now();
-    const project = await getProject(directory);
-    const port = Number(options.port ?? project.port);
-    const hostname = options.hostname ?? project.hostname;
+    const project = await getProject(directory, argOverride(options));
     try {
       const manifest = await readManifest(project.cwd);
       startServer(
         manifest.routes,
         {
-          port,
-          hostname,
+          port: project.port,
+          hostname: project.hostname,
           forceNode: project.config.node,
         },
         manifest.middleware,
