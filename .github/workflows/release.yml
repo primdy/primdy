@@ -45,7 +45,7 @@ jobs:
         run: bun run build
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm stage publish --access public
 
       - name: Pack tarball
         run: bun pm pack
