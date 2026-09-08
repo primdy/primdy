@@ -13,7 +13,7 @@
     }
   },
   "bin": {
-    "ylode": "./dist/server/index.js"
+    "ylode": "dist/server/index.js"
   },
   "files": [
     "dist"
