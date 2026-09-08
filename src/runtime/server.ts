@@ -29,6 +29,20 @@ function toReq(req: IncomingMessage, hostname: string): Request {
   );
 }
 
+function desc(
+  err: unknown,
+  opts: { port: number; hostname: string },
+): string {
+  const code = (err as NodeJS.ErrnoException | undefined)?.code;
+  if (code === "EADDRINUSE") {
+    return ""; //work on
+  }
+  if (code === "EACCES") {
+    return `Permission denied to listen on port ${opts.port}`;
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
 export function startServer(
   routes: Route[],
   options: {
@@ -54,15 +68,20 @@ export function startServer(
     }
   }
   if (useBun) {
-    const server = Bun.serve({
-      hostname: options.hostname,
-      port: options.port,
-      fetch,
-    });
-    console.log(
-      `${chalk.bold.cyanBright(`◆ Primdy Server`)}\n- Local:         ${server.url}`,
-    );
-    return server;
+    try {
+      const server = Bun.serve({
+        hostname: options.hostname,
+        port: options.port,
+        fetch,
+      });
+      console.log(
+        `${chalk.bold.cyanBright(`◆ Primdy Server`)}\n- Local:         ${server.url}`,
+      );
+      return server;
+    } catch (err) {
+      log.err(desc(err, options));
+      process.exit(1);
+    }
   }
   /*
     node compatibility start
@@ -80,6 +99,10 @@ export function startServer(
     } else {
       res.end();
     }
+  });
+  server.on("error", (err) => {
+    log.err(desc(err, options));
+    process.exit(1);
   });
   server.listen(options.port, options.hostname, () => {
     console.log(

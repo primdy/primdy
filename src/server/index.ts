@@ -42,6 +42,15 @@ if (!isBun) {
   }
 }
 
+process.on("uncaughtException", (error) => {
+  log.err(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  log.err(reason instanceof Error ? reason.message : String(reason));
+  process.exit(1);
+});
+
 const program = new Command();
 program
   .name("primdy")
