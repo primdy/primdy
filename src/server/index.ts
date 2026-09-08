@@ -162,9 +162,10 @@ program
           })),
         },
       ]);
-      log.success(
-        `Built ${routes.length} routes in ${Math.round(performance.now() - t1)}ms`,
-      );
+      const bMs = performance.now() - t1;
+      const bTime =
+        bMs >= 1000 ? `${(bMs / 1000).toFixed(1)}s` : `${Math.round(bMs)}ms`;
+      log.success(`Built ${routes.length} routes in ${bTime}`);
     } catch (error) {
       log.err(error instanceof Error ? error.message : String(error));
       process.exit(1);
