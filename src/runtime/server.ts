@@ -29,13 +29,13 @@ function toReq(req: IncomingMessage, hostname: string): Request {
   );
 }
 
-function desc(
-  err: unknown,
-  opts: { port: number; hostname: string },
-): string {
+function portused(err: unknown): boolean {
+  return (err as NodeJS.ErrnoException | undefined)?.code === "EADDRINUSE";
+}
+function desc(err: unknown, opts: { port: number; hostname: string }): string {
   const code = (err as NodeJS.ErrnoException | undefined)?.code;
   if (code === "EADDRINUSE") {
-    return ""; //work on
+    return `Port ${opts.port} is already in use`;
   }
   if (code === "EACCES") {
     return `Permission denied to listen on port ${opts.port}`;
@@ -68,19 +68,27 @@ export function startServer(
     }
   }
   if (useBun) {
-    try {
-      const server = Bun.serve({
-        hostname: options.hostname,
-        port: options.port,
-        fetch,
-      });
-      console.log(
-        `${chalk.bold.cyanBright(`◆ Primdy Server`)}\n- Local:         ${server.url}`,
-      );
-      return server;
-    } catch (err) {
-      log.err(desc(err, options));
-      process.exit(1);
+    let port = options.port;
+    for (let attempt = 0; attempt <= 5; attempt++) {
+      try {
+        const server = Bun.serve({
+          hostname: options.hostname,
+          port,
+          fetch,
+        });
+        console.log(
+          `${chalk.bold.cyanBright(`◆ Primdy Server`)}\n- Local:         ${server.url}`,
+        );
+        return server;
+      } catch (err) {
+        if (!portused(err) || attempt === 5) {
+          log.err(desc(err, { ...options, port }));
+          process.exit(1);
+        }
+        const nextPort = port + 1;
+        log.warn(`Port ${port} is in use, using ${nextPort} instead`);
+        port = nextPort;
+      }
     }
   }
   /*
@@ -100,18 +108,31 @@ export function startServer(
       res.end();
     }
   });
-  server.on("error", (err) => {
-    log.err(desc(err, options));
-    process.exit(1);
-  });
-  server.listen(options.port, options.hostname, () => {
-    console.log(
-      `${chalk.bold.yellowBright(`◆ Primdy Server`)}\n- Local:         http://${options.hostname}:${options.port}/`,
-    );
-    log.warn(
-      "Primdy is optimized for Bun, and Node.js compatibility is slower\n  Consider migrating your application: https://bun.sh/",
-    );
-  });
+  let port = options.port;
+  let attempt = 0;
+  const listen = () => {
+    server.once("error", (err: NodeJS.ErrnoException) => {
+      if (portused(err) && attempt < 5) {
+        attempt++;
+        const nextPort = port + 1;
+        log.warn(`Port ${port} is in use, using ${nextPort} instead`);
+        port = nextPort;
+        listen();
+        return;
+      }
+      log.err(desc(err, { ...options, port }));
+      process.exit(1);
+    });
+    server.listen(port, options.hostname, () => {
+      console.log(
+        `${chalk.bold.yellowBright(`◆ Primdy Server`)}\n- Local:         http://${options.hostname}:${port}/`,
+      );
+      log.warn(
+        "Primdy is optimized for Bun, and Node.js compatibility is slower\n  Consider migrating your application: https://bun.sh/",
+      );
+    });
+  };
+  listen();
   return server;
   /*
     node compatibility end
