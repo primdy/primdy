@@ -20,7 +20,10 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const isBun = typeof process !== "undefined" && !!process.versions?.bun;
-if (!isBun) {
+const isDev = process.argv[2] === "dev";
+const rel = process.env.YLODE_RELAUNCHED_INTERNAL === "1";
+
+if (!rel) {
   const argForce =
     process.argv.includes("--node") || process.argv.includes("-N");
   const forcedNode =
@@ -28,13 +31,29 @@ if (!isBun) {
     (await loadConfig(process.cwd())
       .then((config) => config.node === true)
       .catch(() => false));
-  if (!forcedNode) {
+  const proc = fileURLToPath(import.meta.url);
+  const env = { ...process.env, YLODE_RELAUNCHED_INTERNAL: "1" };
+  if (forcedNode) {
+    if (isDev) {
+      try {
+        const result = spawnSync(
+          process.execPath,
+          ["--watch", proc, ...process.argv.slice(2)],
+          { stdio: "inherit", env },
+        );
+        process.exit(result.status ?? 0);
+      } catch {
+        //
+      }
+    }
+  } else if (!isBun || isDev) {
     try {
-      const proc = fileURLToPath(import.meta.url);
-      const result = spawnSync("bun", [proc, ...process.argv.slice(2)], {
-        stdio: "inherit",
-        env: process.env,
-      });
+      const bunArgs = isDev ? ["--hot"] : []; //https://bun.com/docs/runtime/watch-mode#hot-mode
+      const result = spawnSync(
+        "bun",
+        [...bunArgs, proc, ...process.argv.slice(2)],
+        { stdio: "inherit", env },
+      );
       process.exit(result.status ?? 0);
     } catch {
       //
