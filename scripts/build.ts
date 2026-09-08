@@ -4,7 +4,7 @@ import { rm, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 if (typeof Bun === "undefined") {
-  console.log("Ylode cannot be built without Bun");
+  console.log("Primdy cannot be built without Bun");
   process.exit(1);
 }
 
@@ -86,4 +86,4 @@ await makeServer(join(root, "src/server/index.ts"), join(dist, "server"));
 await makeLib(join(root, "src/index.ts"), dist);
 await types();
 await assertNoLeaks(dist);
-console.log("Built ylode");
+console.log("Built primdy");

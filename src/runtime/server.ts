@@ -60,7 +60,7 @@ export function startServer(
       fetch,
     });
     console.log(
-      `${chalk.bold.yellowBright(`◆ Ylode Server`)}\n- Local:         ${server.url}`,
+      `${chalk.bold.cyanBright(`◆ Primdy Server`)}\n- Local:         ${server.url}`,
     );
     return server;
   }
@@ -83,10 +83,10 @@ export function startServer(
   });
   server.listen(options.port, options.hostname, () => {
     console.log(
-      `${chalk.bold.yellowBright(`◆ Ylode Server`)}\n- Local:         http://${options.hostname}:${options.port}/`,
+      `${chalk.bold.yellowBright(`◆ Primdy Server`)}\n- Local:         http://${options.hostname}:${options.port}/`,
     );
     log.warn(
-      "Ylode is optimized for Bun, and Node.js compatibility is slower\n  Consider migrating your application: https://bun.sh/",
+      "Primdy is optimized for Bun, and Node.js compatibility is slower\n  Consider migrating your application: https://bun.sh/",
     );
   });
   return server;

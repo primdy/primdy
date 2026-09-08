@@ -13,7 +13,7 @@ export async function writeManifest(
   routes: Route[],
   middleware: Middleware[] = [],
 ) {
-  const dir = join(cwd, ".ylode");
+  const dir = join(cwd, ".primdy");
   await mkdir(dir, { recursive: true });
 
   const manifest: BuildManifest = {
@@ -31,7 +31,7 @@ export async function writeManifest(
 }
 
 export async function readManifest(cwd: string): Promise<BuildManifest> {
-  const dir = join(cwd, ".ylode");
+  const dir = join(cwd, ".primdy");
   const file = join(dir, "routes.json");
 
   const manifest = JSON.parse(await readFile(file, "utf8")) as BuildManifest;

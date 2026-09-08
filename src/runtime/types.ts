@@ -33,7 +33,7 @@ export type MiddlewareModule = {
   proxy?: MiddlewareHandler;
 };
 
-export type YlodeConfig = {
+export type PrimdyConfig = {
   src?: string;
   port?: number;
   hostname?: string;

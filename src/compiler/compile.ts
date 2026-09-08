@@ -9,7 +9,7 @@ import type { Middleware, Route } from "../router/types";
 export async function build(cwd: string, src: string) {
   const routes = await scanRoutes(join(cwd, src));
   const middleware = await scanMiddleware(join(cwd, src));
-  const outputDir = join(cwd, ".ylode");
+  const outputDir = join(cwd, ".primdy");
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
 

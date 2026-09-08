@@ -1,13 +1,13 @@
-# Ylode
+# Primdy
 
 Blazingly fast, file-system routed API framework optimized for [Bun](https://bun.sh).
 
 ## Installation
 
 ```bash
-bun add ylode
+bun add primdy
 # or
-npm install ylode
+npm install primdy
 ```
 
 ## Quickstart
@@ -24,7 +24,7 @@ export async function GET() {
 Start the dev server:
 
 ```bash
-ylode dev
+primdy dev
 ```
 
 That's it! You can now make a request to `http://localhost:3000/` and expect `{"ok": true}`.
@@ -73,10 +73,10 @@ export function proxy(request: Request) {
 
 ## Helpers
 
-For convenience, `ylode` exports few helper functions for creating responses:
+For convenience, `primdy` exports few helper functions for creating responses:
 
 ```ts
-import { json, text, redirect } from "ylode";
+import { json, text, redirect } from "primdy";
 
 json({ hello: "world" });
 text("hello");
@@ -86,7 +86,7 @@ redirect("/auth");
 ## Cookies
 
 ```ts
-import { cookies, setCookie, deleteCookie } from "ylode";
+import { cookies, setCookie, deleteCookie } from "primdy";
 
 export async function GET(request: Request) {
   const theme = cookies(request).get("theme")?.value ?? "light";
@@ -97,28 +97,28 @@ export async function GET(request: Request) {
 
 ## Configuration
 
-Create a `ylode.config.ts` at your project root:
+Create a `primdy.config.ts` at your project root:
 
 ```ts
-import type { YlodeConfig } from "ylode";
+import type { PrimdyConfig } from "primdy";
 
 export default {
   src: "src",
   port: 3000,
   hostname: "localhost",
   node: false,
-} satisfies YlodeConfig;
+} satisfies PrimdyConfig;
 ```
 
 ## CLI
 
 ```bash
-ylode dev
-ylode build
-ylode start
-ylode analyze
+primdy dev
+primdy build
+primdy start
+primdy analyze
 ```
 
 ## Production builds
 
-In production, you probably want to serve `ylode start` instead of `ylode dev`. Use `ylode build` to bundle your application first!
+In production, you probably want to serve `primdy start` instead of `primdy dev`. Use `primdy build` to bundle your application first!

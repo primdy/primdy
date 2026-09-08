@@ -1,8 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "ylode dev",
-    "build": "ylode build",
-    "start": "ylode start"
+    "dev": "primdy dev",
+    "build": "primdy build",
+    "start": "primdy start"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "ylode",
+  "name": "primdy",
   "version": "0.1.0",
   "description": "Blazingly fast, file-system routed API framework",
   "license": "MIT",
@@ -13,7 +13,7 @@
     }
   },
   "bin": {
-    "ylode": "dist/server/index.js"
+    "primdy": "dist/server/index.js"
   },
   "files": [
     "dist"

@@ -4,7 +4,7 @@ export type {
   RouteContext,
   RouteHandler,
   RouteModule,
-  YlodeConfig,
+  PrimdyConfig,
 } from "./runtime/types";
 export { json, text, redirect } from "./runtime/response";
 export { cookies, setCookie, deleteCookie } from "./runtime/cookies";

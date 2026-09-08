@@ -14,7 +14,7 @@ import { startServer } from "../runtime/server";
 import { makeTrees } from "../utils";
 import pkg from "../../package.json";
 
-import type { YlodeConfig } from "../runtime/types";
+import type { PrimdyConfig } from "../runtime/types";
 
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -44,7 +44,7 @@ if (!isBun) {
 
 const program = new Command();
 program
-  .name("ylode")
+  .name("primdy")
   .description("Blazingly fast, file-system routed API framework")
   .version(pkg.version)
   .helpOption("-h, --help", "Display help")
@@ -52,7 +52,7 @@ program
 
 async function getProject(
   directory: string,
-  overrides: Partial<YlodeConfig> = {},
+  overrides: Partial<PrimdyConfig> = {},
 ) {
   const cwd = resolve(process.cwd(), directory);
   const config = await loadConfig(cwd, {
@@ -78,8 +78,8 @@ function argOverride(opts: {
   port?: string;
   hostname?: string;
   node?: boolean;
-}): Partial<YlodeConfig> {
-  const overrides: Partial<YlodeConfig> = {};
+}): Partial<PrimdyConfig> {
+  const overrides: Partial<PrimdyConfig> = {};
   if (opts.port !== undefined) overrides.port = Number(opts.port);
   if (opts.hostname !== undefined) overrides.hostname = opts.hostname;
   if (opts.node !== undefined) overrides.node = opts.node;
@@ -196,7 +196,7 @@ program
       ready(t1);
     } catch {
       log.err(
-        `No production build found\n  Run ${chalk.bold("ylode build")} to build your application`,
+        `No production build found\n  Run ${chalk.bold("primdy build")} to build your application`,
       );
       process.exit(1);
     }

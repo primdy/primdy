@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "ylode",
+      "name": "primdy",
       "dependencies": {
         "chalk": "^6.0.0",
         "commander": "^15.0.0",
