@@ -45,7 +45,7 @@ if (!isBun) {
 const program = new Command();
 program
   .name("ylode")
-  .description("Blazingly fast API framework")
+  .description("Blazingly fast, file-system routed API framework")
   .version(pkg.version)
   .helpOption("-h, --help", "Display help")
   .helpCommand("help", "Displays this message.");
