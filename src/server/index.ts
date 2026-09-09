@@ -16,7 +16,7 @@ import pkg from "../../package.json";
 
 import type { PrimdyConfig } from "../runtime/types";
 
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { title } from "../process";
 
@@ -24,6 +24,37 @@ const isBun = typeof process !== "undefined" && !!process.versions?.bun;
 
 await title("primdy-server", isBun);
 
+function doBun(): Promise<number | null> {
+  return new Promise((resolveExit) => {
+    const proc = fileURLToPath(import.meta.url);
+    let child: ReturnType<typeof spawn>;
+    try {
+      child = spawn("bun", [proc, ...process.argv.slice(2)], {
+        stdio: "inherit",
+        env: process.env,
+      });
+    } catch {
+      resolveExit(null);
+      return;
+    }
+    const forward = (signal: NodeJS.Signals) => {
+      child.kill(signal); //zombie processes
+    };
+    process.on("SIGINT", forward);
+    process.on("SIGTERM", forward);
+    let spawnFailed = false;
+    child.once("error", () => {
+      spawnFailed = true;
+      resolveExit(null);
+    });
+    child.once("exit", (code, signal) => {
+      process.off("SIGINT", forward);
+      process.off("SIGTERM", forward);
+      if (spawnFailed) return;
+      resolveExit(code ?? (signal ? 1 : 0));
+    });
+  });
+}
 if (!isBun) {
   const argForce =
     process.argv.includes("--node") || process.argv.includes("-N");
@@ -33,16 +64,8 @@ if (!isBun) {
       .then((config) => config.node === true)
       .catch(() => false));
   if (!forcedNode) {
-    try {
-      const proc = fileURLToPath(import.meta.url);
-      const result = spawnSync("bun", [proc, ...process.argv.slice(2)], {
-        stdio: "inherit",
-        env: process.env,
-      });
-      process.exit(result.status ?? 0);
-    } catch {
-      //
-    }
+    const code = await doBun();
+    if (code !== null) process.exit(code);
   }
 }
 

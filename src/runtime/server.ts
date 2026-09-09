@@ -43,6 +43,21 @@ function desc(err: unknown, opts: { port: number; hostname: string }): string {
   return err instanceof Error ? err.message : String(err);
 }
 
+function sigint(close: () => void) {
+  let stopping = false;
+  const stop = () => {
+    if (stopping) return;
+    stopping = true;
+    try {
+      close();
+    } finally {
+      process.exit(0);
+    }
+  };
+  process.on("SIGINT", stop);
+  process.on("SIGTERM", stop);
+}
+
 export function startServer(
   routes: Route[],
   options: {
@@ -79,6 +94,7 @@ export function startServer(
         console.log(
           `${chalk.bold.cyanBright(`◆ Primdy Server`)}\n- Local:         ${server.url}`,
         );
+        sigint(() => server.stop(true));
         return server;
       } catch (err) {
         if (!portused(err) || attempt === 5) {
@@ -133,6 +149,10 @@ export function startServer(
     });
   };
   listen();
+  sigint(() => {
+    server.closeAllConnections?.();
+    server.close();
+  });
   return server;
   /*
     node compatibility end
