@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage } from "node:http";
 import { Readable } from "node:stream";
 import chalk from "chalk";
-import type { Middleware, Route } from "../router/types";
+import type { Boundary, Middleware, Route } from "../router/types";
 import { handleRequest } from "./handler";
 import { reqlog } from "./logger";
 import { log } from "../logger";
@@ -66,13 +66,21 @@ export function startServer(
     forceNode?: boolean;
   },
   middleware: Middleware[] = [],
+  notFound: Boundary[] = [],
+  errorPages: Boundary[] = [],
 ) {
   const useBun = isBun && !options.forceNode;
   async function fetch(request: Request) {
     const started = performance.now();
     const url = new URL(request.url);
     try {
-      const response = await handleRequest(request, routes, middleware);
+      const response = await handleRequest(
+        request,
+        routes,
+        middleware,
+        notFound,
+        errorPages,
+      );
       reqlog(request, url.pathname, response.status, started);
       return response;
     } catch (error) {

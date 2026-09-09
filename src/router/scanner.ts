@@ -2,7 +2,7 @@ import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { parseRoute } from "./parser";
-import type { Middleware, Route } from "./types";
+import type { Boundary, Middleware, Route } from "./types";
 
 const methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
 
@@ -39,15 +39,27 @@ export async function scanRoutes(src: string): Promise<Route[]> {
 }
 
 export async function scanMiddleware(src: string): Promise<Middleware[]> {
-  const middleware: Middleware[] = [];
+  return scanBoundary(src, /^(middleware|proxy)\.(ts|js)$/);
+}
+
+export async function scanNotFound(src: string): Promise<Boundary[]> {
+  return scanBoundary(src, /^not-found\.(ts|js)$/);
+}
+
+export async function scanError(src: string): Promise<Boundary[]> {
+  return scanBoundary(src, /^error\.(ts|js)$/);
+}
+
+async function scanBoundary(src: string, test: RegExp): Promise<Boundary[]> {
+  const entries: Boundary[] = [];
   for (const entry of await listFiles(src)) {
     if (!entry.isFile()) continue;
-    if (!/^(middleware|proxy)\.(ts|js)$/.test(entry.name)) continue;
+    if (!test.test(entry.name)) continue;
     const file = fullpath(entry);
     const dir = relative(src, dirname(file)).replaceAll("\\", "/");
-    middleware.push({ file, dir: dir === "." ? "" : dir });
+    entries.push({ file, dir: dir === "." ? "" : dir });
   }
-  return middleware.sort((a, b) => a.dir.length - b.dir.length);
+  return entries.sort((a, b) => a.dir.length - b.dir.length);
 }
 
 function compareRoutes(a: Route, b: Route) {

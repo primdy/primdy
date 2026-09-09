@@ -18,6 +18,8 @@ export type Middleware = {
   dir: string;
 };
 
+export type Boundary = Middleware;
+
 export type Match = {
   route: Route;
   params: Record<string, string | string[]>;

@@ -1,17 +1,31 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
-import type { Middleware, Route } from "../router/types";
+import type { Boundary, Middleware, Route } from "../router/types";
 
 export type BuildManifest = {
   version: 1;
   routes: Route[];
   middleware: Middleware[];
+  notFound: Boundary[];
+  error: Boundary[];
 };
+
+function toRelative(dir: string, entries: Boundary[]): Boundary[] {
+  return entries.map((entry) => ({
+    ...entry,
+    file: relative(dir, entry.file).replaceAll("\\", "/"),
+  }));
+}
+function toAbsolute(dir: string, entries: Boundary[] = []): Boundary[] {
+  return entries.map((entry) => ({ ...entry, file: join(dir, entry.file) }));
+}
 
 export async function writeManifest(
   cwd: string,
   routes: Route[],
   middleware: Middleware[] = [],
+  notFound: Boundary[] = [],
+  errorPages: Boundary[] = [],
 ) {
   const dir = join(cwd, ".primdy");
   await mkdir(dir, { recursive: true });
@@ -22,10 +36,9 @@ export async function writeManifest(
       ...route,
       file: relative(dir, route.file).replaceAll("\\", "/"),
     })),
-    middleware: middleware.map((entry) => ({
-      ...entry,
-      file: relative(dir, entry.file).replaceAll("\\", "/"),
-    })),
+    middleware: toRelative(dir, middleware),
+    notFound: toRelative(dir, notFound),
+    error: toRelative(dir, errorPages),
   };
   await writeFile(join(dir, "routes.json"), JSON.stringify(manifest));
 }
@@ -41,9 +54,8 @@ export async function readManifest(cwd: string): Promise<BuildManifest> {
       ...route,
       file: join(dir, route.file),
     })),
-    middleware: (manifest.middleware ?? []).map((entry) => ({
-      ...entry,
-      file: join(dir, entry.file),
-    })),
+    middleware: toAbsolute(dir, manifest.middleware),
+    notFound: toAbsolute(dir, manifest.notFound),
+    error: toAbsolute(dir, manifest.error),
   };
 }

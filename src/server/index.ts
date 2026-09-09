@@ -9,7 +9,12 @@ import { build } from "../compiler/compile";
 import { loadConfig } from "../config/loader";
 import { log, ready } from "../logger";
 import { readManifest } from "../compiler/manifest";
-import { scanMiddleware, scanRoutes } from "../router/scanner";
+import {
+  scanError,
+  scanMiddleware,
+  scanNotFound,
+  scanRoutes,
+} from "../router/scanner";
 import { startServer } from "../runtime/server";
 import { makeTrees } from "../utils";
 import pkg from "../../package.json";
@@ -158,6 +163,8 @@ program
     }
     const routes = await scanRoutes(project.appPath);
     const middleware = await scanMiddleware(project.appPath);
+    const notFound = await scanNotFound(project.appPath);
+    const errorPages = await scanError(project.appPath);
     startServer(
       routes,
       {
@@ -166,6 +173,8 @@ program
         forceNode: project.config.node,
       },
       middleware,
+      notFound,
+      errorPages,
     );
     ready(t1);
   });
@@ -181,7 +190,10 @@ program
       process.exit(1);
     }
     try {
-      const { routes, middleware } = await build(project.cwd, project.src);
+      const { routes, middleware, notFound, error } = await build(
+        project.cwd,
+        project.src,
+      );
       await makeTrees([
         {
           title: "Routes",
@@ -193,6 +205,13 @@ program
         {
           title: "Middleware",
           entries: middleware.map((entry) => ({
+            label: entry.dir ? `/${entry.dir}` : "/",
+            file: entry.file,
+          })),
+        },
+        {
+          title: "Boundaries",
+          entries: [...notFound, ...error].map((entry) => ({
             label: entry.dir ? `/${entry.dir}` : "/",
             file: entry.file,
           })),
@@ -228,6 +247,8 @@ program
           forceNode: project.config.node,
         },
         manifest.middleware,
+        manifest.notFound,
+        manifest.error,
       );
       ready(t1);
     } catch {

@@ -1,6 +1,10 @@
 export type {
+  ErrorHandler,
+  ErrorModule,
   MiddlewareHandler,
   MiddlewareModule,
+  NotFoundHandler,
+  NotFoundModule,
   RouteContext,
   RouteHandler,
   RouteModule,
