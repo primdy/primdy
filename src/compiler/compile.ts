@@ -43,7 +43,7 @@ async function bundle(entrypoint: string, outdir: string) {
     bundle: true,
     platform: "node",
     format: "esm",
-    minifyWhitespace: true,
+    //minifyWhitespace: true,
     sourcemap: "external",
     logLevel: "silent",
   });
