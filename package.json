@@ -21,6 +21,7 @@
   "scripts": {
     "build": "bun scripts/build.ts",
     "prepublishOnly": "bun run build",
+    "link": "bun run build && bun link && bun link primdy",
     "test": "bun test"
   },
   "dependencies": {
