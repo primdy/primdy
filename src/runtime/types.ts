@@ -33,6 +33,26 @@ export type MiddlewareModule = {
   proxy?: MiddlewareHandler;
 };
 
+export type NotFoundHandler = (
+  request: Request,
+  context: RouteContext,
+) => Response | Promise<Response>;
+
+export type NotFoundModule = {
+  default?: NotFoundHandler;
+  notFound?: NotFoundHandler;
+};
+
+export type ErrorHandler = (
+  request: Request,
+  error: unknown,
+) => Response | Promise<Response>;
+
+export type ErrorModule = {
+  default?: ErrorHandler;
+  error?: ErrorHandler;
+};
+
 export type PrimdyConfig = {
   src?: string;
   port?: number;

@@ -1,4 +1,4 @@
-import type { Match, Middleware, Route } from "./types";
+import type { Boundary, Match, Middleware, Route } from "./types";
 
 export function matchRoute(routes: Route[], pathname: string): Match | null {
   const parts = pathname.split("/").filter(Boolean);
@@ -75,4 +75,23 @@ export function matchMiddleware(middleware: Middleware[], route: Route) {
     (m) =>
       m.dir === "" || route.dir === m.dir || route.dir.startsWith(`${m.dir}/`),
   );
+}
+
+/**
+ * Finds the most specific boundary (`not-found.ts`/`error.ts`) whose
+ * directory is an ancestor of (or equal to) `dir`, falling back to a
+ * root-level boundary if one is registered.
+ */
+export function matchBoundary(
+  entries: Boundary[],
+  dir: string,
+): Boundary | null {
+  let best: Boundary | null = null;
+  for (const entry of entries) {
+    const isMatch =
+      entry.dir === "" || entry.dir === dir || dir.startsWith(`${entry.dir}/`);
+    if (!isMatch) continue;
+    if (!best || entry.dir.length > best.dir.length) best = entry;
+  }
+  return best;
 }

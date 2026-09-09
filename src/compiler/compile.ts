@@ -1,14 +1,21 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { build as esbuild } from "esbuild";
-import { scanMiddleware, scanRoutes } from "../router/scanner";
+import {
+  scanError,
+  scanMiddleware,
+  scanNotFound,
+  scanRoutes,
+} from "../router/scanner";
 import { writeManifest } from "./manifest";
 import { writeTypes } from "./typegen";
-import type { Middleware, Route } from "../router/types";
+import type { Boundary, Route } from "../router/types";
 
 export async function build(cwd: string, src: string) {
   const routes = await scanRoutes(join(cwd, src));
   const middleware = await scanMiddleware(join(cwd, src));
+  const notFound = await scanNotFound(join(cwd, src));
+  const errorPages = await scanError(join(cwd, src));
   const outputDir = join(cwd, ".primdy");
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
@@ -22,18 +29,46 @@ export async function build(cwd: string, src: string) {
     });
   }
 
-  const middlewareDir = join(outputDir, "middleware");
-  const builtMiddleware: Middleware[] = [];
-  for (const [index, entry] of middleware.entries()) {
-    builtMiddleware.push({
+  const builtMiddleware = await bundleBoundaries(
+    middleware,
+    join(outputDir, "middleware"),
+  );
+  const builtNotFound = await bundleBoundaries(
+    notFound,
+    join(outputDir, "not-found"),
+  );
+  const builtError = await bundleBoundaries(
+    errorPages,
+    join(outputDir, "error"),
+  );
+  await writeManifest(
+    cwd,
+    builtRoutes,
+    builtMiddleware,
+    builtNotFound,
+    builtError,
+  );
+  await writeTypes(cwd, routes);
+  return {
+    routes: builtRoutes,
+    middleware: builtMiddleware,
+    notFound: builtNotFound,
+    error: builtError,
+  };
+}
+
+async function bundleBoundaries(
+  entries: Boundary[],
+  outdir: string,
+): Promise<Boundary[]> {
+  const built: Boundary[] = [];
+  for (const [index, entry] of entries.entries()) {
+    built.push({
       ...entry,
-      file: await bundle(entry.file, join(middlewareDir, String(index))),
+      file: await bundle(entry.file, join(outdir, String(index))),
     });
   }
-
-  await writeManifest(cwd, builtRoutes, builtMiddleware);
-  await writeTypes(cwd, routes);
-  return { routes: builtRoutes, middleware: builtMiddleware };
+  return built;
 }
 
 async function bundle(entrypoint: string, outdir: string) {

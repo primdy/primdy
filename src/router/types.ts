@@ -18,6 +18,12 @@ export type Middleware = {
   dir: string;
 };
 
+/**
+ * A file that's associated with a directory rather than an exact route,
+ * such as `middleware.ts`, `not-found.ts`, or `error.ts`.
+ */
+export type Boundary = Middleware;
+
 export type Match = {
   route: Route;
   params: Record<string, string | string[]>;
