@@ -5,12 +5,12 @@
     "": {
       "name": "primdy",
       "dependencies": {
-        "chalk": "^6.0.0",
-        "commander": "^15.0.0",
         "esbuild": "^0.28.2",
       },
       "devDependencies": {
         "@types/bun": "^1.4.1",
+        "chalk": "^6.0.0",
+        "commander": "^15.0.0",
         "typescript": "^7.0.2",
       },
     },
