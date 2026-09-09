@@ -2,6 +2,12 @@
 
 Blazingly fast, file-system routed API framework optimized for [Bun](https://bun.sh).
 
+```bash
+bunx create-primdy-app@latest
+# or
+npx create-primdy-app@latest
+```
+
 ## Installation
 
 ```bash
