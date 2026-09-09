@@ -18,8 +18,12 @@ import type { PrimdyConfig } from "../runtime/types";
 
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { title } from "../process";
 
 const isBun = typeof process !== "undefined" && !!process.versions?.bun;
+
+await title("primdy-server", isBun);
+
 if (!isBun) {
   const argForce =
     process.argv.includes("--node") || process.argv.includes("-N");
