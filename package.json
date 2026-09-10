@@ -3,6 +3,14 @@
   "version": "0.1.2",
   "description": "Blazingly fast, file-system routed API framework",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/primdy/primdy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/primdy/primdy/issues"
+  },
+  "homepage": "https://github.com/primdy/primdy",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
