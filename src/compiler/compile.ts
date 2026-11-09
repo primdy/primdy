@@ -1,6 +1,5 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { build as esbuild } from "esbuild";
 import {
   scanError,
   scanMiddleware,
@@ -72,18 +71,32 @@ async function bundleBoundaries(
 }
 
 async function bundle(entrypoint: string, outdir: string) {
-  const result = await esbuild({
-    entryPoints: [entrypoint],
-    outdir,
-    bundle: true,
-    platform: "node",
-    format: "esm",
-    //minifyWhitespace: true,
-    sourcemap: "external",
-    logLevel: "silent",
-  });
-  if (result.errors.length) {
-    throw new Error(`Failed to build ${entrypoint}`);
+  if (Bun.isStandaloneExecutable) {
+    const result = await Bun.build({
+      entrypoints: [entrypoint],
+      outdir,
+      target: "node",
+      format: "esm",
+      sourcemap: "external",
+    });
+    if (!result.success) {
+      for (const message of result.logs) console.error(message);
+      throw new Error(`Cannot build ${entrypoint}`);
+    }
+  } else {
+    const { build: esbuild } = await import("esbuild");
+    const result = await esbuild({
+      entryPoints: [entrypoint],
+      outdir,
+      bundle: true,
+      platform: "node",
+      format: "esm",
+      sourcemap: "external",
+      logLevel: "silent",
+    });
+    if (result.errors.length) {
+      throw new Error(`Cannot build ${entrypoint}`);
+    }
   }
   const outfile = join(
     outdir,
