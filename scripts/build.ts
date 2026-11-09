@@ -17,8 +17,7 @@ const runplat =
     : process.platform === "darwin"
       ? "darwin"
       : "linux";
-const target =
-  process.env.PRIMDY_TARGET ?? `bun-${runplat}-${process.arch}`;
+const target = process.env.PRIMDY_TARGET ?? `bun-${runplat}-${process.arch}`;
 const targets = {
   "bun-linux-x64": { suffix: "linux-x64", os: "linux", cpu: "x64" },
   "bun-linux-arm64": { suffix: "linux-arm64", os: "linux", cpu: "arm64" },
@@ -69,8 +68,7 @@ async function makeServer(entrypoint: string, outdir: string) {
   }
 }
 async function makeBinary(entrypoint: string) {
-  if (!isTarget(target))
-    throw new Error(`Unsupported target ${target}`);
+  if (!isTarget(target)) throw new Error(`Unsupported target ${target}`);
   const platform = targets[target];
   const packageDir = join(root, ".release", `server-${platform.suffix}`);
   const binary = `primdy-server${platform.os === "win32" ? ".exe" : ""}`;

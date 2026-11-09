@@ -72,20 +72,20 @@ async function bundleBoundaries(
 
 async function bundle(entrypoint: string, outdir: string) {
   if (Bun.isStandaloneExecutable) {
-    const result = await Bun.build({
+    const res = await Bun.build({
       entrypoints: [entrypoint],
       outdir,
       target: "node",
       format: "esm",
       sourcemap: "external",
     });
-    if (!result.success) {
-      for (const message of result.logs) console.error(message);
+    if (!res.success) {
+      for (const message of res.logs) console.error(message);
       throw new Error(`Cannot build ${entrypoint}`);
     }
   } else {
     const { build: esbuild } = await import("esbuild");
-    const result = await esbuild({
+    const res = await esbuild({
       entryPoints: [entrypoint],
       outdir,
       bundle: true,
@@ -94,7 +94,7 @@ async function bundle(entrypoint: string, outdir: string) {
       sourcemap: "external",
       logLevel: "silent",
     });
-    if (result.errors.length) {
+    if (res.errors.length) {
       throw new Error(`Cannot build ${entrypoint}`);
     }
   }
