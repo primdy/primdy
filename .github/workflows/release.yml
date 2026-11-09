@@ -10,7 +10,47 @@ permissions:
   id-token: write
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: bun-linux-x64
+            package: linux-x64
+          - target: bun-linux-arm64
+            package: linux-arm64
+          - target: bun-darwin-x64
+            package: darwin-x64
+          - target: bun-darwin-arm64
+            package: darwin-arm64
+          - target: bun-windows-x64
+            package: win32-x64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+        env:
+          PRIMDY_TARGET: ${{ matrix.target }}
+
+      - name: Upload binary package
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-${{ matrix.target }}
+          path: .release/server-${{ matrix.package }}
+          if-no-files-found: error
+
   release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,11 +78,20 @@ jobs:
             exit 1
           fi
 
-      #- name: Test
-      #  run: bun test
-
-      - name: Build
+      - name: Build package
         run: bun run build
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: .release
+          merge-multiple: true
+
+      - name: Publish binaries
+        run: |
+          for package in .release/server-*; do
+            npm publish "$package" --access public
+          done
 
       - name: Publish to npm
         run: npm publish --access public
@@ -53,4 +102,6 @@ jobs:
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${GITHUB_REF_NAME}" ./*.tgz --generate-notes
+        run: |
+          sha256sum .release/server-*/primdy-server* > primdy-SHA256SUMS
+          gh release create "${GITHUB_REF_NAME}" ./*.tgz .release/server-*/primdy-server* primdy-SHA256SUMS --generate-notes

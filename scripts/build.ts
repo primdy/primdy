@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 
-import { rm, readdir } from "node:fs/promises";
+import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import pkg from "../package.json";
 
 if (typeof Bun === "undefined") {
   console.log("Primdy cannot be built without Bun");
@@ -10,7 +11,24 @@ if (typeof Bun === "undefined") {
 
 const root = join(import.meta.dir, "..");
 const dist = join(root, "dist");
+const runplat =
+  process.platform === "win32"
+    ? "windows"
+    : process.platform === "darwin"
+      ? "darwin"
+      : "linux";
+const target = process.env.PRIMDY_TARGET ?? `bun-${runplat}-${process.arch}`;
+const targets = {
+  "bun-linux-x64": { suffix: "linux-x64", os: "linux", cpu: "x64" },
+  "bun-linux-arm64": { suffix: "linux-arm64", os: "linux", cpu: "arm64" },
+  "bun-darwin-x64": { suffix: "darwin-x64", os: "darwin", cpu: "x64" },
+  "bun-darwin-arm64": { suffix: "darwin-arm64", os: "darwin", cpu: "arm64" },
+  "bun-windows-x64": { suffix: "win32-x64", os: "win32", cpu: "x64" },
+} as const;
 
+function isTarget(value: string): value is keyof typeof targets {
+  return Object.prototype.hasOwnProperty.call(targets, value);
+}
 async function clean() {
   await rm(dist, { recursive: true, force: true });
 }
@@ -42,6 +60,47 @@ async function makeServer(entrypoint: string, outdir: string) {
     ...opts,
     entrypoints: [entrypoint],
     outdir,
+    format: "esm",
+  });
+  if (!result.success) {
+    for (const message of result.logs) console.error(message);
+    throw new Error(`Cannot make ${entrypoint}`);
+  }
+}
+async function makeBinary(entrypoint: string) {
+  if (!isTarget(target)) throw new Error(`Unsupported target ${target}`);
+  const platform = targets[target];
+  const packageDir = join(root, ".release", `server-${platform.suffix}`);
+  const binary = `primdy-server${platform.os === "win32" ? ".exe" : ""}`;
+  await rm(packageDir, { recursive: true, force: true });
+  await mkdir(packageDir, { recursive: true });
+  const result = await Bun.build({
+    ...opts,
+    entrypoints: [entrypoint],
+    compile: { target, outfile: join(packageDir, binary) },
+  });
+  if (!result.success) {
+    for (const message of result.logs) console.error(message);
+    throw new Error(`Cannot compile ${target}`);
+  }
+  await writeFile(
+    join(packageDir, "package.json"),
+    JSON.stringify({
+      name: `@primdy/${platform.suffix}`,
+      version: pkg.version,
+      os: [platform.os],
+      cpu: [platform.cpu],
+      main: `./${binary}`,
+      files: [binary],
+    }),
+  );
+}
+async function makePkg(entrypoint: string, outdir: string) {
+  const result = await Bun.build({
+    ...opts,
+    entrypoints: [entrypoint],
+    outdir,
+    target: "node",
     format: "esm",
   });
   if (!result.success) {
@@ -83,7 +142,9 @@ async function assertNoLeaks(dir: string) {
 
 await clean();
 await makeServer(join(root, "src/server/index.ts"), join(dist, "server"));
+await makePkg(join(root, "src/server/spawn.ts"), join(dist, "server"));
 await makeLib(join(root, "src/index.ts"), dist);
+await makeBinary(join(root, "src/server/index.ts"));
 await types();
 await assertNoLeaks(dist);
 console.log("Built primdy");
