@@ -85,12 +85,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: .release
-          merge-multiple: true
+          merge-multiple: false
 
       - name: Publish binaries
         run: |
-          for package in .release/server-*; do
-            npm publish "$package" --access public
+          for package in .release/server-bun-*; do
+            if [ -d "$package" ]; then
+              echo "===== $package ====="
+              npm publish "$package" --access public
+            fi
           done
 
       - name: Publish to npm
