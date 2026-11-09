@@ -91,6 +91,7 @@ async function makeBinary(entrypoint: string) {
       repository: pkg.repository,
       os: [platform.os],
       cpu: [platform.cpu],
+      bin: { "primdy-server": `./${binary}` },
       main: `./${binary}`,
       files: [binary],
     }),
