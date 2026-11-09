@@ -106,5 +106,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          sha256sum .release/server-*/primdy-server* > primdy-SHA256SUMS
-          gh release create "${GITHUB_REF_NAME}" ./*.tgz .release/server-*/primdy-server* primdy-SHA256SUMS --generate-notes
+          mkdir -p rel
+          for package in .release/server-*; do
+            if [ -f "$package/primdy-server" ]; then
+              cp "$package/primdy-server" "rel/$(basename "$package")"
+            elif [ -f "$package/primdy-server.exe" ]; then
+              cp "$package/primdy-server.exe" "rel/$(basename "$package").exe"
+            fi
+          done
+          sha256sum rel/* > primdy-SHA256SUMS
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" \
+              ./*.tgz \
+              rel/* \
+              primdy-SHA256SUMS \
+              --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              ./*.tgz \
+              rel/* \
+              primdy-SHA256SUMS \
+              --generate-notes
+          fi
