@@ -88,6 +88,7 @@ async function makeBinary(entrypoint: string) {
     JSON.stringify({
       name: `@primdy/${platform.suffix}`,
       version: pkg.version,
+      repository: pkg.repository,
       os: [platform.os],
       cpu: [platform.cpu],
       main: `./${binary}`,
