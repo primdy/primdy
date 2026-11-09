@@ -1,6 +1,6 @@
 {
   "name": "primdy",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Blazingly fast, file-system routed API framework",
   "license": "MIT",
   "repository": {
@@ -36,11 +36,11 @@
     "esbuild": "^0.28.2"
   },
   "optionalDependencies": {
-    "@primdy/darwin-arm64": "0.1.4",
-    "@primdy/darwin-x64": "0.1.4",
-    "@primdy/linux-arm64": "0.1.4",
-    "@primdy/linux-x64": "0.1.4",
-    "@primdy/win32-x64": "0.1.4"
+    "@primdy/darwin-arm64": "0.1.5",
+    "@primdy/darwin-x64": "0.1.5",
+    "@primdy/linux-arm64": "0.1.5",
+    "@primdy/linux-x64": "0.1.5",
+    "@primdy/win32-x64": "0.1.5"
   },
   "devDependencies": {
     "@types/bun": "^1.4.1",
